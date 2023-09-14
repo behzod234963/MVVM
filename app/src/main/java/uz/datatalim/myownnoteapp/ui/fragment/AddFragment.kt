@@ -6,6 +6,8 @@ import android.view.View
 import android.widget.EditText
 import android.widget.LinearLayout
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.airbnb.lottie.LottieAnimationView
 import com.google.android.material.appbar.AppBarLayout
@@ -13,6 +15,7 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import uz.datatalim.myownnoteapp.R
+import uz.datatalim.myownnoteapp.ViewModel.AddViewModel
 import uz.datatalim.myownnoteapp.data.remote.ApiClient
 import uz.datatalim.myownnoteapp.model.Note
 import uz.datatalim.myownnoteapp.util.Extensions.hide
@@ -21,6 +24,7 @@ import uz.datatalim.myownnoteapp.util.Extensions.show
 
 class AddFragment : Fragment(R.layout.fragment_add) {
     lateinit var loading: LottieAnimationView
+    lateinit var viewModel:AddViewModel
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -28,6 +32,9 @@ class AddFragment : Fragment(R.layout.fragment_add) {
     }
 
     private fun initViews(view: View) {
+
+        viewModel= ViewModelProvider(this)[AddViewModel::class.java]
+
         val color: String = getRandomColor()
         loading = view.findViewById(R.id.lav_loading)
         val llMain = view.findViewById<LinearLayout>(R.id.ll_main)
@@ -47,21 +54,13 @@ class AddFragment : Fragment(R.layout.fragment_add) {
     }
 
     private fun saveNote(note: Note) {
-        loading.show()
-        ApiClient.apiService.saveNote(note).enqueue(object : Callback<Note> {
-            override fun onResponse(call: Call<Note>, response: Response<Note>) {
-                //hideLoading
-                if (response.isSuccessful) {
-                    loading.hide()
-                    findNavController().navigate(R.id.action_addFragment_to_homeFragment)
-                }
-            }
 
-            override fun onFailure(call: Call<Note>, t: Throwable) {
-                //hideLoading
-                loading.hide()
-            }
-        })
+        viewModel.saveNote(note).observe(viewLifecycleOwner){
+
+            findNavController().navigate(R.id.action_addFragment_to_homeFragment)
+
+        }
+
     }
 
     private fun getRandomColor(): String {
