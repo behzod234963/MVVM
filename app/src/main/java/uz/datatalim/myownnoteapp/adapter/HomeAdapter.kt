@@ -42,8 +42,9 @@ class HomeAdapter : RecyclerView.Adapter<HomeAdapter.HomeViewHolder>() {
             tvText.text = note.title
             Log.d("@@@@@", "onBindViewHolder: $note")
             item.setCardBackgroundColor(ColorStateList.valueOf(Color.parseColor(note.color!!)))
-            item.setOnClickListener {
+            item.setOnLongClickListener {
                 onClick?.invoke(position)
+                return@setOnLongClickListener true
             }
 
 

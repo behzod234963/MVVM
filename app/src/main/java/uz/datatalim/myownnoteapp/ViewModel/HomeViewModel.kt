@@ -13,6 +13,7 @@ import uz.datatalim.myownnoteapp.model.Note
 class HomeViewModel:ViewModel() {
 
     val allNotes=MutableLiveData<ArrayList<Note>>()
+    val deleteNote=MutableLiveData<Note>()
 
     fun apiGetAll():LiveData<ArrayList<Note>>{
 
@@ -34,8 +35,36 @@ class HomeViewModel:ViewModel() {
 
             override fun onFailure(call: Call<ArrayList<uz.datatalim.myownnoteapp.model.Note>>, t: Throwable) {
 
+                allNotes.value=ArrayList()
+
             }
         })
+
+        return allNotes
+
+    }
+
+    fun deleteNote(id:String):LiveData<Note>{
+
+        ApiClient.apiService.deleteNote(id).enqueue(object :Callback<Note>{
+            override fun onResponse(call: Call<Note>, response: Response<Note>) {
+
+                if (response.isSuccessful){
+
+                    deleteNote.value=response.body()
+
+                }
+
+            }
+
+            override fun onFailure(call: Call<Note>, t: Throwable) {
+
+                deleteNote.value=Note()
+
+            }
+        })
+
+        return deleteNote
 
     }
 

@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.LinearLayout
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.airbnb.lottie.LottieAnimationView
@@ -12,6 +13,7 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import uz.datatalim.myownnoteapp.R
+import uz.datatalim.myownnoteapp.ViewModel.HomeViewModel
 import uz.datatalim.myownnoteapp.adapter.HomeAdapter
 import uz.datatalim.myownnoteapp.data.remote.ApiClient
 import uz.datatalim.myownnoteapp.model.Note
@@ -22,6 +24,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     lateinit var adapter: HomeAdapter
     lateinit var loading: LottieAnimationView
     lateinit var llEmpty: LinearLayout
+    lateinit var viewModel:HomeViewModel
     var myNotes = ArrayList<Note>()
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -29,6 +32,9 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     }
 
     private fun initViews(view: View) {
+
+        viewModel=ViewModelProvider(this).get(HomeViewModel::class.java)
+
         adapter = HomeAdapter()
         loading = view.findViewById(R.id.lav_loading)
         llEmpty = view.findViewById(R.id.ll_empty)
@@ -36,30 +42,34 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         val bAdd = view.findViewById<LottieAnimationView>(R.id.lav_add)
         val rvNotes = view.findViewById<RecyclerView>(R.id.rv_notes)
         rvNotes.adapter = adapter
-        loadAllNotes()
+
+        adapter.onClick={position->
+
+            viewModel.deleteNote(myNotes[position].id!!).observe(viewLifecycleOwner,){
+
+                loadList()
+
+            }
+
+        }
+
+        loadList()
+
         bAdd.setOnClickListener {
             findNavController().navigate(R.id.action_homeFragment_to_addFragment)
         }
     }
 
-    private fun loadAllNotes() {
-        ApiClient.apiService.getAllNotes().enqueue(object : Callback<ArrayList<Note>> {
-            override fun onResponse(
-                call: Call<ArrayList<Note>>,
-                response: Response<ArrayList<Note>>
-            ) {
+    private fun loadList() {
 
-                if (response.isSuccessful){
+        viewModel.apiGetAll().observe(viewLifecycleOwner) {
 
+            myNotes.clear()
+            myNotes.addAll(it)
+            adapter.submitList(it)
 
-                }
+        }
 
-            }
-
-            override fun onFailure(call: Call<ArrayList<Note>>, t: Throwable) {
-
-            }
-        })
     }
 
 }
