@@ -1,17 +1,25 @@
 package uz.datatalim.myownnoteapp.ui.fragment
 
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.EditText
 import android.widget.LinearLayout
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.airbnb.lottie.LottieAnimationView
 import com.google.android.material.appbar.AppBarLayout
+import kotlinx.coroutines.flow.collect
 import uz.datatalim.myownnoteapp.R
-import uz.datatalim.myownnoteapp.ViewModel.Home.AddViewModel
+import uz.datatalim.myownnoteapp.ViewModel.Add.AddViewModel
+import uz.datatalim.myownnoteapp.ViewModel.Factory.AddFactory
+import uz.datatalim.myownnoteapp.data.Repositories.AddRepository
+import uz.datatalim.myownnoteapp.data.remote.ApiClient
 import uz.datatalim.myownnoteapp.model.Note
+import uz.datatalim.myownnoteapp.util.UiStateObject
 
 
 class AddFragment : Fragment(R.layout.fragment_add) {
@@ -20,12 +28,12 @@ class AddFragment : Fragment(R.layout.fragment_add) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        initViews(view)
     }
 
     private fun initViews(view: View) {
 
-        viewModel= ViewModelProvider(this)[AddViewModel::class.java]
+        setupViewModel()
+        setupObserve()
 
         val color: String = getRandomColor()
         loading = view.findViewById(R.id.lav_loading)
@@ -38,6 +46,8 @@ class AddFragment : Fragment(R.layout.fragment_add) {
         val etDescription = view.findViewById<EditText>(R.id.et_description)
 
         llSave.setOnClickListener {
+            Toast.makeText(requireContext(), "clickcksajclskjclkasj", Toast.LENGTH_SHORT).show()
+            Log.d(1111.toString(), "")
             val title = etTitle.text.toString()
             val description = etDescription.text.toString()
             val note = Note(title = title, description = description, color = color)
@@ -45,13 +55,54 @@ class AddFragment : Fragment(R.layout.fragment_add) {
         }
     }
 
-    private fun saveNote(note: Note) {
+    private fun setupObserve() {
 
-        viewModel.saveNote(note).observe(viewLifecycleOwner){
+        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
 
-            findNavController().navigate(R.id.action_addFragment_to_homeFragment)
+            viewModel.addNotes.collect{
+
+                when(it){
+
+                    is UiStateObject.LOADING->{
+
+//                        show loading
+                        loading.visibility=View.VISIBLE
+
+                    }
+
+                    is UiStateObject.SUCCESS->{
+
+                        loading.visibility=View.GONE
+                        findNavController().navigate(R.id.action_addFragment_to_homeFragment)
+
+                    }
+
+                    is UiStateObject.ERROR->{
+
+//                        show Error
+                        loading.visibility=View.GONE
+                        Toast.makeText(requireContext(), it.message, Toast.LENGTH_SHORT).show()
+
+                    }
+
+                    else -> {}
+                }
+
+            }
 
         }
+
+    }
+
+    private fun saveNote(note: Note) {
+
+        viewModel.addNotes(note)
+
+    }
+
+    private fun setupViewModel() {
+
+        viewModel=ViewModelProvider(this,AddFactory(AddRepository(ApiClient.apiService)))[AddViewModel::class.java]
 
     }
 

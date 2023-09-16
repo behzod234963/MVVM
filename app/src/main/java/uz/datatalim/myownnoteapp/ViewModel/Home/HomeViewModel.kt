@@ -27,7 +27,7 @@ class HomeViewModel(private val repository: HomeRepository):ViewModel() {
 
             if (response.code()>=400){
 
-                _notes.value=UiStateList.ERROR(response.errorBody().toString())
+                _notes.value=UiStateList.ERROR(response.code().toString())
 
             }else{
 
@@ -37,7 +37,7 @@ class HomeViewModel(private val repository: HomeRepository):ViewModel() {
 
         }catch (e:Exception){
 
-            _notes.value=UiStateList.ERROR(e.localizedMessage?:"No Internet")
+            _notes.value=UiStateList.ERROR("No Internet")
 
         }
 

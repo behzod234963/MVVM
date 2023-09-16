@@ -18,7 +18,7 @@ interface ApiService {
     suspend fun getNoteById(@Path("id") id: String):Response< Note>
 
     @POST("notes")
-    suspend fun saveNote(@Body note: Note):Response< Note>
+    suspend fun saveNote(@Body note: Note):Response<Note>
 
     @PUT("notes/{id}")
     suspend fun editNote(
