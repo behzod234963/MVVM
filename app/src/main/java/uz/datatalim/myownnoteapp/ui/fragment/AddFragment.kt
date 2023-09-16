@@ -1,30 +1,22 @@
 package uz.datatalim.myownnoteapp.ui.fragment
 
-import android.graphics.Color
 import android.os.Bundle
 import android.view.View
 import android.widget.EditText
 import android.widget.LinearLayout
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.airbnb.lottie.LottieAnimationView
 import com.google.android.material.appbar.AppBarLayout
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 import uz.datatalim.myownnoteapp.R
-import uz.datatalim.myownnoteapp.ViewModel.AddViewModel
-import uz.datatalim.myownnoteapp.data.remote.ApiClient
+import uz.datatalim.myownnoteapp.ViewModel.Home.AddViewModel
 import uz.datatalim.myownnoteapp.model.Note
-import uz.datatalim.myownnoteapp.util.Extensions.hide
-import uz.datatalim.myownnoteapp.util.Extensions.show
 
 
 class AddFragment : Fragment(R.layout.fragment_add) {
     lateinit var loading: LottieAnimationView
-    lateinit var viewModel:AddViewModel
+    lateinit var viewModel: AddViewModel
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)

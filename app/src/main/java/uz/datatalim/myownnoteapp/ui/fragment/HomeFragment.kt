@@ -5,26 +5,28 @@ import android.view.View
 import android.widget.LinearLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.airbnb.lottie.LottieAnimationView
-import com.google.android.material.floatingactionbutton.FloatingActionButton
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import uz.datatalim.myownnoteapp.R
-import uz.datatalim.myownnoteapp.ViewModel.HomeViewModel
+import uz.datatalim.myownnoteapp.ViewModel.Factory.HomeFactory
+import uz.datatalim.myownnoteapp.ViewModel.Home.HomeViewModel
 import uz.datatalim.myownnoteapp.adapter.HomeAdapter
+import uz.datatalim.myownnoteapp.data.Repositories.HomeRepository
 import uz.datatalim.myownnoteapp.data.remote.ApiClient
+import uz.datatalim.myownnoteapp.data.remote.ApiService
 import uz.datatalim.myownnoteapp.model.Note
 import uz.datatalim.myownnoteapp.util.Extensions.hide
-import uz.datatalim.myownnoteapp.util.Extensions.show
+import uz.datatalim.myownnoteapp.util.UiStateList
 
 class HomeFragment : Fragment(R.layout.fragment_home) {
     lateinit var adapter: HomeAdapter
     lateinit var loading: LottieAnimationView
     lateinit var llEmpty: LinearLayout
-    lateinit var viewModel:HomeViewModel
+    lateinit var viewModel: HomeViewModel
     var myNotes = ArrayList<Note>()
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -33,7 +35,8 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
     private fun initViews(view: View) {
 
-        viewModel=ViewModelProvider(this).get(HomeViewModel::class.java)
+        setupViewModel()
+        setupObserve()
 
         adapter = HomeAdapter()
         loading = view.findViewById(R.id.lav_loading)
@@ -43,15 +46,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         val rvNotes = view.findViewById<RecyclerView>(R.id.rv_notes)
         rvNotes.adapter = adapter
 
-        adapter.onClick={position->
-
-            viewModel.deleteNote(myNotes[position].id!!).observe(viewLifecycleOwner,){
-
-                loadList()
-
-            }
-
-        }
 
         loadList()
 
@@ -60,15 +54,55 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
     }
 
-    private fun loadList() {
+    private fun setupObserve() {
 
-        viewModel.apiGetAll().observe(viewLifecycleOwner) {
+        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
 
-            myNotes.clear()
-            myNotes.addAll(it)
-            adapter.submitList(it)
+            viewModel.notes.collect{
+
+                when(it){
+
+                    is UiStateList.LOADING->{
+
+//                        show loading
+
+                    }
+                    is UiStateList.SUCCESS->{
+
+                       setData(it.data as ArrayList<Note>)
+
+                    }
+
+                    is UiStateList.ERROR->{
+
+//                        show error
+
+                    }else->Unit
+
+                }
+
+            }
 
         }
+
+    }
+
+    private fun setData(data: ArrayList<Note>) {
+
+        adapter.submitList(data)
+
+    }
+
+
+    private fun loadList() {
+
+        viewModel.getNotes()
+
+    }
+
+    private fun setupViewModel() {
+
+        viewModel= ViewModelProvider(this,HomeFactory(HomeRepository(ApiClient.apiService)))[HomeViewModel::class.java]
 
     }
 

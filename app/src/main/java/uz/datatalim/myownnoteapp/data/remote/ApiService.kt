@@ -1,6 +1,6 @@
 package uz.datatalim.myownnoteapp.data.remote
 
-import retrofit2.Call
+import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
@@ -12,22 +12,22 @@ import uz.datatalim.myownnoteapp.model.Note
 interface ApiService {
 
     @GET("notes")
-    fun getAllNotes(): Call<ArrayList<Note>>
+    suspend fun getAllNotes(): Response<ArrayList<Note>>
 
     @GET("notes/{id}")
-    fun getNoteById(@Path("id") id: String): Call<Note>
+    suspend fun getNoteById(@Path("id") id: String):Response< Note>
 
     @POST("notes")
-    fun saveNote(@Body note: Note): Call<Note>
+    suspend fun saveNote(@Body note: Note):Response< Note>
 
     @PUT("notes/{id}")
-    fun editNote(
+    suspend fun editNote(
         @Path("id") id: String,
         @Body note: Note
-    ): Call<Note>
+    ): Response<Note>
 
     @DELETE("notes/{id}")
-    fun deleteNote(@Path("id") id: String): Call<Note>
+    suspend fun deleteNote(@Path("id") id: String): Note
 
 
 }

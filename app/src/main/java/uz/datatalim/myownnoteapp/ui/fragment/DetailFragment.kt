@@ -9,4 +9,6 @@ import uz.datatalim.myownnoteapp.R
 
 class DetailFragment : Fragment(R.layout.fragment_detail) {
 
+
+
 }
